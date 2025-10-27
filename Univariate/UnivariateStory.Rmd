@@ -1,0 +1,52 @@
+---
+title: "A Map Depicting the Top 10 Causes of Death in South Africa in the year 2006"
+author: "Lonwabo Zikhali"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(scales)
+```
+
+```{r load-data, message=FALSE, warning=FALSE}
+
+CODAfrica <- read_excel("../Cause of Death AFRICA.xlsx")
+
+
+if (!all(c("Entity", "Year") %in% names(CODAfrica))) {
+  stop("Expected columns 'Entity' and 'Year' not found in Cause of Death AFRICA.xlsx")
+}
+
+```
+
+```{r process-plot, message=FALSE, warning=FALSE, fig.width=14, fig.height=12}
+
+top10 <- CODAfrica %>%
+  filter(Entity == "South Africa", Year == 2006) %>%
+  select(-Entity, -Code, -Year) %>%
+  pivot_longer(cols = everything(), names_to = "Cause", values_to = "Fatalities") %>%
+  arrange(desc(Fatalities)) %>%
+  slice_head(n = 10) %>%
+  mutate(Color = if_else(Cause == "HIV/AIDS fatalities", "red", "grey"))
+
+p <- ggplot(top10, aes(x = reorder(Cause, Fatalities), y = Fatalities, fill = Color)) +
+  geom_col(color = "black", width = 0.7) +
+  scale_fill_identity() +
+  coord_flip() +
+  labs(title = "Top 10 Causes of Death in South Africa (2006)", x = NULL, y = "Number of Fatalities") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 14)) +
+  scale_y_continuous(labels = label_comma())
+
+print(p)
+
+ggsave("SouthAfricanTopTen.png", plot = p, dpi = 300, width = 8, height = 6)
+
+```
+
+The number of fatalities due to HIV/AIDS in South Africa in 2006 are almost 4 times the second highest cause of death, which is Cardiovascular Disease.

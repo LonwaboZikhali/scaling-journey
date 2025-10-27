@@ -73,3 +73,6 @@ print(p)
 # save to file if desired
 ggsave("hiv_map_2006.png", p, width = 10, height = 8, dpi = 300)
 ```
+
+The pitch black colour on the map representing South Africa emphasizes the extreme amount of HIV/AIDS-related fatalities in the country in 2006, which stood at 310,000.
+This is significantly higher than any other country in Africa for that year, with the next highest being Nigeria at 140,000 fatalities.
