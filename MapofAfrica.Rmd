@@ -1,0 +1,75 @@
+---
+title: "A Map Depicting the Prevalence of HIV/AIDS-Related Deaths across Africa in the year 2006"
+author: "Lonwabo Zikhali"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# setup: load libraries quietly
+library(sf)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(dplyr)
+library(readxl)
+library(scales)
+```
+
+```{r data-processing, message=FALSE, warning=FALSE}
+# import country shapes
+africa <- ne_countries(continent = "Africa", returnclass = "sf")
+
+# cause-of-death data
+CODAfrica <- read_excel("Cause of Death AFRICA.xlsx")
+
+# harmonize names in the COD dataset
+CODAfrica <- CODAfrica %>%
+  mutate(Entity = recode(Entity,
+          "Somaliland" = "Somalia",
+          "Eswatini" = "eSwatini",
+          "Cabo Verde" = "Cape Verde",
+          "GuineaBissau" = "Guinea-Bissau",
+          "Democratic Republic of Congo" = "Dem. Rep. Congo",
+          "Cote dIvoire" = "Côte d'Ivoire",
+          "Equatorial Guinea" = "Eq. Guinea",
+          "South Sudan" = "S. Sudan",
+          "Central African Republic" = "Central African Rep."
+                      ))
+
+# harmonize names in the spatial data
+africa <- africa %>%
+  mutate(name = recode(name,
+          "W. Sahara" = "Morocco",
+          "Somaliland" = "Somalia"
+                      ))
+
+# filter 2006 HIV/AIDS fatalities
+hiv_2006 <- CODAfrica %>%
+  filter(Year == 2006) %>%
+  select(Entity, `HIV/AIDS fatalities`)
+
+# join and check for mismatches
+africa_hiv <- africa %>%
+  left_join(hiv_2006, by = c("name" = "Entity"))
+
+# report unmatched entities from the data file
+unmatched <- setdiff(hiv_2006$Entity, africa$name)
+if (length(unmatched) > 0) message("Unmatched entities from COD data: ", paste(unmatched, collapse = ", "))
+```
+
+```{r plot, echo=FALSE, fig.width=14, fig.height=12}
+p <- ggplot(africa_hiv) +
+  geom_sf(aes(fill = `HIV/AIDS fatalities`), color = NA) +
+  scale_fill_viridis_c(option = "magma", direction = -1, na.value = "grey90", labels = comma) +
+  labs(
+    title = "HIV/AIDS Fatalities Across African Countries (2006)",
+    fill = "Fatalities"
+  ) +
+  theme_minimal()
+
+print(p)
+
+# save to file if desired
+ggsave("hiv_map_2006.png", p, width = 10, height = 8, dpi = 300)
+```
