@@ -1,0 +1,68 @@
+---
+title: "HIV/AIDS vs Other Causes Death Rate in South Africa (1990–2019)"
+author: "Lonwabo Zikhali"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(ggplot2)
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(scales)
+library(plotly)
+
+```
+
+```{r load-data, message=FALSE, warning=FALSE}
+
+CODAfrica <- read_excel("../Cause of Death AFRICA.xlsx")
+
+
+if (!all(c("Entity", "Year") %in% names(CODAfrica))) {
+  stop("Expected columns 'Entity' and 'Year' not found in Cause of Death AFRICA.xlsx")
+}
+```
+
+```{r process-plot, message=FALSE, warning=FALSE, fig.width=9.5, fig.height=9}
+
+SouthAfrica <- CODAfrica %>% filter(Entity == "South Africa")
+
+SouthAfrica_long_format <- SouthAfrica %>%
+  pivot_longer(cols = -c(Entity, Code, Year), names_to = "Cause", values_to = "Fatalities")
+
+
+others <- SouthAfrica_long_format %>%
+  filter(Cause != "HIV/AIDS fatalities") %>%
+  group_by(Year, Cause) %>%
+  summarise(Fatalities = sum(Fatalities, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Group = "Other")
+
+hiv <- SouthAfrica_long_format %>%
+  filter(Cause == "HIV/AIDS fatalities") %>%
+  group_by(Year) %>%
+  summarise(Fatalities = sum(Fatalities, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Group = "HIV")
+
+
+p <- ggplot() +
+  geom_line(data = others, aes(x = Year, y = Fatalities, group = Cause, color = Group),
+            size = 0.7, alpha = 0.7) +
+  geom_line(data = hiv, aes(x = Year, y = Fatalities, color = Group),
+            size = 1.2) +
+  geom_point(data = hiv, aes(x = Year, y = Fatalities, color = Group),
+             size = 1.7) +
+  scale_color_manual(values = c("HIV" = "red", "Other" = "grey70")) +
+  labs(title = "HIV/AIDS vs Other Causes in South Africa (1990–2019)",
+       x = "Year", y = "Number of Fatalities", color = NULL) +
+  theme_minimal() +
+  scale_y_continuous(labels = label_comma()) +
+  theme(legend.position = "right") +
+  guides(color = guide_legend(override.aes = list(size = c(1.2, 0.8), alpha = c(1, 0.8))))
+
+ggplotly(p)
+```
+
+The plot illustrates the stark contrast between fatalities due to HIV/AIDS and other causes of death in South Africa from 1990 to 2019.

@@ -11,6 +11,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(scales)
+library(plotly)
 ```
 
 ```{r load-data, message=FALSE, warning=FALSE}
@@ -24,7 +25,7 @@ if (!all(c("Entity", "Year") %in% names(CODAfrica))) {
 
 ```
 
-```{r process-plot, message=FALSE, warning=FALSE, fig.width=14, fig.height=12}
+```{r process-plot, message=FALSE, warning=FALSE, fig.width=9.5, fig.height=9}
 
 top10 <- CODAfrica %>%
   filter(Entity == "South Africa", Year == 2006) %>%
@@ -32,21 +33,20 @@ top10 <- CODAfrica %>%
   pivot_longer(cols = everything(), names_to = "Cause", values_to = "Fatalities") %>%
   arrange(desc(Fatalities)) %>%
   slice_head(n = 10) %>%
-  mutate(Color = if_else(Cause == "HIV/AIDS fatalities", "red", "grey"))
+  mutate(Group = if_else(Cause == "HIV/AIDS fatalities", "HIV/AIDS", "Other causes"),
+         Color = if_else(Group == "HIV/AIDS", "red", "grey"))
 
-p <- ggplot(top10, aes(x = reorder(Cause, Fatalities), y = Fatalities, fill = Color)) +
+p <- ggplot(top10, aes(x = reorder(Cause, Fatalities), y = Fatalities, fill = Group)) +
   geom_col(color = "black", width = 0.7) +
-  scale_fill_identity() +
+  scale_fill_manual(values = c("HIV/AIDS" = "red", "Other causes" = "grey")) +
   coord_flip() +
-  labs(title = "Top 10 Causes of Death in South Africa (2006)", x = NULL, y = "Number of Fatalities") +
+  labs(title = "Top 10 Causes of Death in South Africa (2006)", 
+       x = NULL, y = "Number of Fatalities", fill = "Cause of Death") +
   theme_minimal() +
   theme(axis.text.y = element_text(size = 14)) +
   scale_y_continuous(labels = label_comma())
 
-print(p)
-
-ggsave("SouthAfricanTopTen.png", plot = p, dpi = 300, width = 8, height = 6)
-
+ggplotly(p)
 ```
 
 The number of fatalities due to HIV/AIDS in South Africa in 2006 are almost 4 times the second highest cause of death, which is Cardiovascular Disease.

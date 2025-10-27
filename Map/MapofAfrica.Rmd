@@ -14,6 +14,7 @@ library(rnaturalearthdata)
 library(dplyr)
 library(readxl)
 library(scales)
+library(plotly)
 ```
 
 ```{r data-processing, message=FALSE, warning=FALSE}
@@ -21,7 +22,7 @@ library(scales)
 africa <- ne_countries(continent = "Africa", returnclass = "sf")
 
 # cause-of-death data
-CODAfrica <- read_excel("Cause of Death AFRICA.xlsx")
+CODAfrica <- read_excel("../Cause of Death AFRICA.xlsx")
 
 # harmonize names in the COD dataset
 CODAfrica <- CODAfrica %>%
@@ -58,7 +59,7 @@ unmatched <- setdiff(hiv_2006$Entity, africa$name)
 if (length(unmatched) > 0) message("Unmatched entities from COD data: ", paste(unmatched, collapse = ", "))
 ```
 
-```{r plot, echo=FALSE, fig.width=14, fig.height=12}
+```{r plot, echo=FALSE, fig.width=9.5, fig.height=9}
 p <- ggplot(africa_hiv) +
   geom_sf(aes(fill = `HIV/AIDS fatalities`), color = NA) +
   scale_fill_viridis_c(option = "magma", direction = -1, na.value = "grey90", labels = comma) +
@@ -68,10 +69,7 @@ p <- ggplot(africa_hiv) +
   ) +
   theme_minimal()
 
-print(p)
-
-# save to file if desired
-ggsave("hiv_map_2006.png", p, width = 10, height = 8, dpi = 300)
+ggplotly(p)
 ```
 
 The pitch black colour on the map representing South Africa emphasizes the extreme amount of HIV/AIDS-related fatalities in the country in 2006, which stood at 310,000.

@@ -27,6 +27,34 @@ Through these data visualizations, we can see not just the raw numbers, but also
 
 ---
 
+Key outputs
+- Map of HIV/AIDS fatalities across Africa (2006).
+- Top-10 causes of death in South Africa (2006).
+- Time series comparing HIV/AIDS fatalities to other causes in South Africa (1990–2019).
+
+Methods
+- Data ingestion from "Cause of Death AFRICA.xlsx".
+- Data wrangling with the tidyverse (readxl, dplyr, tidyr).
+- Spatial data via rnaturalearth and sf.
+- Static visuals with ggplot2; interactive versions via plotly.
+- Reproducible reports authored in R Markdown.
+
+Key findings (summary)
+- HIV/AIDS was the leading cause of death in South Africa in 2006, substantially higher than other causes.
+- Time-series plots show a rapid rise in HIV-related fatalities during the 1990s and early 2000s, with signs of stabilization coinciding with early ARV rollout.
+- The map highlights South Africa as the worst-affected country in Africa for 2006.
+
+Data sources & attribution
+- Cause of death dataset: "Cause of Death AFRICA.xlsx" - sourced from a comprehensive global dataset of causes of death between 1990 and 2019, originally published via Our World in Data and made available on Kaggle. 
+- Country boundaries: rnaturalearth (Natural Earth).
+
+Project structure (high level)
+- Map/: map Rmd and supporting code
+- Univariate/: top-10 and other single-variable analyses
+- Bivariate/: time-series comparisons
+
+---
+
 ## Usage
 
 ### Run the analysis locally
